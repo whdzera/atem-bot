@@ -1,6 +1,35 @@
 module Bot::DiscordCommands
-  module Searchcard
-    extend Discordrb::EventContainer
+  module SearchCard
+    def self.load(bot)
+      bot.register_application_command(
+        :search,
+        'Search Yu-Gi-Oh! card information',
+        server_id: ENV['guild_id_discord']
+      ) do |cmd|
+        cmd.string('name', 'Enter card name to search', required: true)
+      end
+
+      bot.application_command(:search) do |event|
+        card_name = event.options['name']
+        begin
+          event.defer(ephemeral: false)
+
+          card_match = Ygoprodeck::Match.is(card_name)
+          card_data = Ygoprodeck::Fname.is(card_match)
+
+          if card_data.nil? || card_data['id'].nil?
+            send_not_found_embed(event, card_name)
+          else
+            send_card_embed(event, card_data)
+          end
+        rescue => e
+          puts "[ERROR_API : #{Time.now}] #{e.message}"
+          event.edit_response(
+            content: "⚠️ An error occurred while searching for '#{card_name}'"
+          )
+        end
+      end
+    end
 
     MONSTER_TYPES = {
       'Normal Monster' => {
@@ -119,52 +148,24 @@ module Bot::DiscordCommands
 
     NOT_FOUND_IMAGE = 'https://i.imgur.com/lPSo3Tt.jpg'
 
-    message(description: 'searchcard') do |event|
-      content = event.message.content
-
-      if content.include?('::')
-        temp1 = content.sub('::', '<begin:atem>')
-        temp2 = temp1.sub('::', '<end:atem>')
-
-        match = /<begin:atem>(.+?)<end:atem>/.match(temp2)
-        carry = temp2.include?('<end:atem>') ? '<end:atem>' : nil
-
-        if match && carry == '<end:atem>'
-          card_name = match[1]
-          begin
-            card_match = Ygoprodeck::Match.is(card_name)
-            card_data = Ygoprodeck::Fname.is(card_match)
-
-            if card_data.nil? || card_data['id'].nil?
-              send_not_found_embed(event, card_name)
-            else
-              send_card_embed(event, card_data)
-            end
-          rescue => e
-            puts "[ERROR_API : #{Time.now}]#{e.message}"
-            send_not_found_embed(event, card_name)
-          end
-        end
-      end
-    end
-
     private
 
     def self.send_not_found_embed(event, card_name)
-      event.channel.send_embed do |embed|
-        embed.colour = 0xff1432
-        embed.description = "**'#{card_name}' not found**"
-        embed.image = Discordrb::Webhooks::EmbedImage.new(url: NOT_FOUND_IMAGE)
+      event.edit_response do |builder|
+        builder.content = ''
+        builder.add_embed do |embed|
+          embed.colour = 0xff1432
+          embed.description = "**'#{card_name}' not found**"
+          embed.image =
+            Discordrb::Webhooks::EmbedImage.new(url: NOT_FOUND_IMAGE)
+        end
       end
     end
 
     def self.send_card_embed(event, card_data)
       return if card_data.nil?
 
-      id = card_data['id']
-      name = card_data['name']
       type = card_data['type']
-
       if is_monster_card?(type)
         send_monster_embed(event, card_data)
       else
@@ -194,15 +195,20 @@ module Bot::DiscordCommands
       type_info = MONSTER_TYPES[type]
       about = "[ #{race} #{type_info[:suffix]} ]"
 
-      event.channel.send_embed do |embed|
-        embed.colour = type_info[:color]
-        embed.add_field name: "**#{name}**",
-                        value:
-                          "**Limit :** **OCG:** #{ban_ocg} | **TCG:** #{ban_tcg}\n**Type:** #{type}\n**Attribute:** #{attribute}\n**Level:** #{level}"
-        embed.add_field name: about, value: desc
-        embed.add_field name: 'ATK', value: atk.to_s, inline: true
-        embed.add_field name: 'DEF', value: def_val.to_s, inline: true
-        embed.image = Discordrb::Webhooks::EmbedImage.new(url: pict)
+      event.edit_response do |builder|
+        builder.content = ''
+        builder.add_embed do |embed|
+          embed.colour = type_info[:color]
+          embed.add_field(
+            name: "**#{name}**",
+            value:
+              "**Limit :** **OCG:** #{ban_ocg} | **TCG:** #{ban_tcg}\n**Type:** #{type}\n**Attribute:** #{attribute}\n**Level:** #{level}"
+          )
+          embed.add_field(name: about, value: desc)
+          embed.add_field(name: 'ATK', value: atk.to_s, inline: true)
+          embed.add_field(name: 'DEF', value: def_val.to_s, inline: true)
+          embed.image = Discordrb::Webhooks::EmbedImage.new(url: pict)
+        end
       end
     end
 
@@ -214,12 +220,17 @@ module Bot::DiscordCommands
       desc = card_data['desc']
       pict = Ygoprodeck::Image.is(id)
 
-      event.channel.send_embed do |embed|
-        embed.colour = NON_MONSTER_TYPES[type][:color]
-        embed.add_field name: "**#{name}**",
-                        value: "**Type:** #{type}\n**Property:** #{race}"
-        embed.add_field name: 'Effect', value: desc
-        embed.image = Discordrb::Webhooks::EmbedImage.new(url: pict)
+      event.edit_response do |builder|
+        builder.content = ''
+        builder.add_embed do |embed|
+          embed.colour = NON_MONSTER_TYPES[type][:color]
+          embed.add_field(
+            name: "**#{name}**",
+            value: "**Type:** #{type}\n**Property:** #{race}"
+          )
+          embed.add_field(name: 'Effect', value: desc)
+          embed.image = Discordrb::Webhooks::EmbedImage.new(url: pict)
+        end
       end
     end
   end

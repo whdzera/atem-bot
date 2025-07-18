@@ -10,10 +10,10 @@ module Bot::DiscordCommands
       bot.application_command(:ping) do |event|
         begin
           start = Time.now
-          event.defer
+          event.defer(ephemeral: false)
           latency = ((Time.now - start) * 1000).round
 
-          event.edit_response(content: "🏓 Pong! Latency: #{latency}ms")
+          event.edit_response(content: "Pong! Latency: #{latency}ms")
         rescue => e
           puts "[ERROR] Ping command failed: #{e.message}"
           event.respond(
