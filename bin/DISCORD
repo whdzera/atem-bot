@@ -7,12 +7,11 @@ module Bot
   Dotenv.load(File.expand_path('../config/.env', __dir__))
   CONFIG = ENV['mode_discord']
 
-  def self.create_bot(prefix)
-    Discordrb::Commands::CommandBot.new(
-      client_id: ENV['client_id_discord'],
+  def self.create_bot
+    Discordrb::Bot.new(
       token: ENV['token_discord'],
-      prefix: prefix,
-      compress_mode: :large
+      client_id: ENV['client_id_discord'],
+      intents: %i[server_messages server_presences]
     )
   end
 
@@ -20,13 +19,33 @@ module Bot
     new_module = Module.new
     const_set(klass.to_sym, new_module)
     Dir["app/bot/discord/#{path}/*.rb"].each { |file| load file }
-    new_module.constants.each { |mod| bot.include! new_module.const_get(mod) }
+    new_module.constants.each do |mod|
+      mod_class = new_module.const_get(mod)
+
+      bot.include! mod_class if mod_class < Discordrb::EventContainer
+
+      mod_class.load(bot) if mod_class.respond_to?(:load)
+    end
   end
 
   case CONFIG
   when 'development', 'production'
-    prefix = ENV["prefix_discord_#{CONFIG}"]
-    bot = create_bot(prefix)
+    bot = create_bot
+
+    bot.ready do |_event|
+      case CONFIG
+      when 'development'
+        bot.game = ENV['game_discord_development']
+      when 'production'
+        bot.game = ENV['game_discord_production']
+      else
+        bot.game = 'Ready'
+      end
+
+      puts "[READY] Bot is online! Mode: #{CONFIG}"
+    end
+
+    bot.mention { |event| event.respond '**`/help` for usage**' }
 
     load_modules(bot, :DiscordEvents, 'events')
     load_modules(bot, :DiscordCommands, 'commands')
