@@ -1,24 +1,39 @@
 module Bot::DiscordCommands
-  module Ping
+  module Info
     def self.load(bot)
       bot.register_application_command(
-        :ping,
-        'Check latency bot',
+        :info,
+        'Show information about the bot',
         server_id: ENV['guild_id_discord']
       )
 
-      bot.application_command(:ping) do |event|
+      bot.application_command(:info) do |event|
         begin
-          start = Time.now
           event.defer(ephemeral: false)
-          latency = ((Time.now - start) * 1000).round
 
-          event.edit_response(content: "Pong! Latency: #{latency}ms")
-        rescue => e
-          puts "[ERROR] Ping command failed: #{e.message}"
-          event.respond(
-            content: '⚠️ An error occurred while processing the command.'
+          event.edit_response(
+            embeds: [
+              {
+                color: 0xff8040,
+                fields: [{ name: '**Information Bot**', value: <<~INFO.strip }]
+                      **Name**      : Atem  
+                      **Version**   : 1.1.0  
+                      **Developer** : [@whdzera](https://github.com/whdzera)  
+                      **Written**   : Ruby Language (discordrb)  
+                    INFO
+              }
+            ]
           )
+        rescue => e
+          puts "[ERROR] Info command failed: #{e.message}"
+          begin
+            event.respond(
+              content: '⚠️ Error while showing bot info.',
+              ephemeral: false
+            )
+          rescue StandardError
+            nil
+          end
         end
       end
     end
