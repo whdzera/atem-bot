@@ -42,7 +42,7 @@ module Bot
         bot.game = 'Ready'
       end
 
-      puts "[READY] Bot is online! Mode: #{CONFIG}"
+      puts "[#{Process.pid} #{Time.now}]  INFO --  : Running Atem Bot - Discord"
     end
 
     bot.mention { |event| event.respond '**`/help` for usage**' }

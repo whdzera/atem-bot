@@ -7,6 +7,6 @@ require './app/bot/telegram/atem'
 
 Dotenv.load(File.expand_path('../config/.env', __dir__))
 
-puts "#{Time.now}]  INFO --  : Running Atem Bot - Telegram"
+puts "[#{Process.pid} #{Time.now}]  INFO --  : Running Atem Bot - Telegram"
 TOKEN = ENV['token_telegram']
 Atem.start

@@ -1,4 +1,4 @@
 #!/usr/bin/env ruby
 
-puts 'Running Atem Bot - WhatsApp'
-exec('node -r ts-node/register app/bot/whatsapp/bot.ts')
+puts "[INFO] [#{Process.pid} #{Time.now}]  Running Atem Bot - WhatsApp"
+exec('node -r ts-node/register app/bot/whatsapp/atem.ts')

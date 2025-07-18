@@ -1,9 +1,33 @@
+require 'rake'
+
+task default: :help
+
+desc 'help'
+task :help do
+  sh 'rake -T'
+end
+
+desc 'Run RSpec tests'
 task :test do
   sh 'rspec spec/index_spec.rb'
 end
 
-task default: :run
+desc 'Run only the Discord bot'
+task :discord do
+  system('ruby bin/DISCORD')
+end
 
+desc 'Run only the Telegram bot'
+task :telegram do
+  system('ruby bin/TELEGRAM')
+end
+
+desc 'Run only the WhatsApp bot'
+task :wa do
+  system('ruby bin/WHATSAPP')
+end
+
+desc 'Run selected bots using ENV variables (e.g., dc=yes wa=yes)'
 task :run do
   selected = []
 
@@ -36,7 +60,7 @@ task :run do
     puts 'Usage examples:'
     puts '  rake run dc=yes           # Run only Discord bot'
     puts '  rake run wa=yes tele=yes  # Run WhatsApp and Telegram bots'
-    puts "  rake run dc=yes wa=yes tele=yes  # Run all bots\n\n"
+    puts '  rake run dc=yes wa=yes tele=yes  # Run all bots\n\n'
     puts 'Available options:'
     puts '  dc=yes     → Run Discord bot'
     puts '  wa=yes     → Run WhatsApp bot'
@@ -46,6 +70,7 @@ task :run do
   end
 end
 
+desc 'Kill all running bot processes and clean up PID files'
 task :kill do
   %w[dc tele wa].each do |bot|
     pid_file = "tmp/#{bot}.pid"
