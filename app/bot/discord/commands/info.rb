@@ -1,13 +1,40 @@
 module Bot::DiscordCommands
   module Info
-    extend Discordrb::Commands::CommandContainer
+    def self.load(bot)
+      bot.register_application_command(
+        :info,
+        'Show information Atem Bot',
+        server_id: ENV['guild_id_discord']
+      )
 
-    command(:info) do |event|
-      event.channel.send_embed do |embed|
-        embed.colour = 0xff8040
-        embed.add_field name: '**Information Bot**',
-                        value:
-                          " **Name**    : Atem \n **Version**   : 1.1.0 \n **Developer** : [@whdzera](https://github.com/whdzera) \n **Written**   : Ruby Language (discordrb) \n **Link**      : invite bot "
+      bot.application_command(:info) do |event|
+        begin
+          event.defer(ephemeral: false)
+
+          event.edit_response(
+            embeds: [
+              {
+                color: 0xff8040,
+                fields: [{ name: '**Information Bot**', value: <<~INFO.strip }]
+                      **Name**      : Atem  
+                      **Version**   : 1.1.0  
+                      **Developer** : [@whdzera](https://github.com/whdzera)  
+                      **Written**   : Ruby Language (discordrb)  
+                    INFO
+              }
+            ]
+          )
+        rescue => e
+          puts "[ERROR] Info command failed: #{e.message}"
+          begin
+            event.respond(
+              content: 'Error while showing bot info.',
+              ephemeral: false
+            )
+          rescue StandardError
+            nil
+          end
+        end
       end
     end
   end

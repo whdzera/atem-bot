@@ -1,6 +1,33 @@
 module Bot::DiscordCommands
-  module Randomcard
-    extend Discordrb::Commands::CommandContainer
+  module RandomCard
+    def self.load(bot)
+      bot.register_application_command(
+        :random,
+        'Get a random Yu-Gi-Oh! card',
+        server_id: ENV['guild_id_discord']
+      )
+
+      bot.application_command(:random) do |event|
+        begin
+          event.defer(ephemeral: false)
+          card_data = Ygoprodeck::Card.random
+
+          if card_data.nil?
+            event.edit_response(content: '⚠️ Failed to get random card')
+            return
+          end
+
+          display_card(event, card_data)
+        rescue => e
+          puts "[ERROR] Random card command failed: #{e.message}"
+          event.edit_response(
+            content: '⚠️ An error occurred while fetching random card'
+          )
+        end
+      end
+    end
+
+    private
 
     MONSTER_TYPES = {
       'Normal Monster' => {
@@ -117,31 +144,15 @@ module Bot::DiscordCommands
       }
     }
 
-    command(:random) do |event|
-      begin
-        card_data = Ygoprodeck::Card.random
-        display_card(event, card_data)
-      rescue => e
-        event.channel.send_message("Error fetching random card: #{e.message}")
-      end
-    end
-
-    private
-
     def self.display_card(event, card_data)
       return if card_data.nil?
 
       type = card_data['type']
-
       if is_monster_card?(type)
         display_monster_card(event, card_data)
       else
         display_non_monster_card(event, card_data)
       end
-    end
-
-    def self.is_monster_card?(type)
-      MONSTER_TYPES.key?(type)
     end
 
     def self.display_monster_card(event, card_data)
@@ -162,15 +173,20 @@ module Bot::DiscordCommands
       type_info = MONSTER_TYPES[type]
       about = "[ #{race} #{type_info[:suffix]} ]"
 
-      event.channel.send_embed do |embed|
-        embed.colour = type_info[:color]
-        embed.add_field name: "**#{name}**",
-                        value:
-                          "**Limit :** **OCG:** #{ban_ocg} | **TCG:** #{ban_tcg}\n**Type:** #{type}\n**Attribute:** #{attribute}\n**Level:** #{level}"
-        embed.add_field name: about, value: desc
-        embed.add_field name: 'ATK', value: atk.to_s, inline: true
-        embed.add_field name: 'DEF', value: def_val.to_s, inline: true
-        embed.image = Discordrb::Webhooks::EmbedImage.new(url: pict)
+      event.edit_response do |builder|
+        builder.content = ''
+        builder.add_embed do |embed|
+          embed.colour = type_info[:color]
+          embed.add_field(
+            name: "**#{name}**",
+            value:
+              "**Limit :** **OCG:** #{ban_ocg} | **TCG:** #{ban_tcg}\n**Type:** #{type}\n**Attribute:** #{attribute}\n**Level:** #{level}"
+          )
+          embed.add_field(name: about, value: desc)
+          embed.add_field(name: 'ATK', value: atk.to_s, inline: true)
+          embed.add_field(name: 'DEF', value: def_val.to_s, inline: true)
+          embed.image = Discordrb::Webhooks::EmbedImage.new(url: pict)
+        end
       end
     end
 
@@ -182,13 +198,22 @@ module Bot::DiscordCommands
       desc = card_data['desc']
       pict = Ygoprodeck::Image.is(id)
 
-      event.channel.send_embed do |embed|
-        embed.colour = NON_MONSTER_TYPES[type][:color]
-        embed.add_field name: "**#{name}**",
-                        value: "**Type:** #{type}\n**Property:** #{race}"
-        embed.add_field name: 'Effect', value: desc
-        embed.image = Discordrb::Webhooks::EmbedImage.new(url: pict)
+      event.edit_response do |builder|
+        builder.content = ''
+        builder.add_embed do |embed|
+          embed.colour = NON_MONSTER_TYPES[type][:color]
+          embed.add_field(
+            name: "**#{name}**",
+            value: "**Type:** #{type}\n**Property:** #{race}"
+          )
+          embed.add_field(name: 'Effect', value: desc)
+          embed.image = Discordrb::Webhooks::EmbedImage.new(url: pict)
+        end
       end
+    end
+
+    def self.is_monster_card?(type)
+      MONSTER_TYPES.key?(type)
     end
   end
 end

@@ -1,150 +1,60 @@
 module Bot::DiscordCommands
-  module Listsrccard
-    extend Discordrb::Commands::CommandContainer
-
+  module ListCard
     NUMBER_EMOJIS = %w[1️⃣ 2️⃣ 3️⃣ 4️⃣ 5️⃣ 6️⃣ 7️⃣ 8️⃣ 9️⃣ 🔟]
     ITEMS_PER_PAGE = 10
     MAX_RESULTS = 30
     EMBED_COLOR = 0xff8040
     NAVIGATION_EMOJIS = { prev_page: '⬅️', next_page: '➡️' }
 
-    MONSTER_TYPES = {
-      'Normal Monster' => {
-        color: 0xdac14c,
-        suffix: ''
-      },
-      'Normal Tuner Monster' => {
-        color: 0xdac14c,
-        suffix: '/ Tuner'
-      },
-      'Effect Monster' => {
-        color: 0xa87524,
-        suffix: '/ Effect'
-      },
-      'Flip Effect Monster' => {
-        color: 0xa87524,
-        suffix: '/ Flip / Effect'
-      },
-      'Flip Tuner Effect Monster' => {
-        color: 0xa87524,
-        suffix: '/ Flip / Tuner / Effect'
-      },
-      'Tuner Monster' => {
-        color: 0xa87524,
-        suffix: '/ Tuner / Effect'
-      },
-      'Toon Monster' => {
-        color: 0xa87524,
-        suffix: '/ Toon / Effect'
-      },
-      'Gemini Monster' => {
-        color: 0xa87524,
-        suffix: '/ Gemini / Effect'
-      },
-      'Spirit Monster' => {
-        color: 0xa87524,
-        suffix: '/ Spirit / Effect'
-      },
-      'Union Effect Monster' => {
-        color: 0xa87524,
-        suffix: '/ Union / Effect'
-      },
-      'Union Tuner Effect Monster' => {
-        color: 0xa87524,
-        suffix: '/ Union / Tuner / Effect'
-      },
-      'Ritual Monster' => {
-        color: 0x293cbd,
-        suffix: '/ Ritual'
-      },
-      'Ritual Effect Monster' => {
-        color: 0x293cbd,
-        suffix: '/ Ritual / Effect'
-      },
-      'Fusion Monster' => {
-        color: 0x9115ee,
-        suffix: '/ Fusion / Effect'
-      },
-      'Synchro Monster' => {
-        color: 0xfcfcfc,
-        suffix: '/ Synchro / Effect'
-      },
-      'Synchro Pendulum Effect Monster' => {
-        color: 0xfcfcfc,
-        suffix: '/ Synchro / Pendulum / Effect'
-      },
-      'Synchro Tuner Monster' => {
-        color: 0xfcfcfc,
-        suffix: '/ Synchro / Tuner / Effect'
-      },
-      'XYZ Monster' => {
-        color: 0x252525,
-        suffix: '/ XYZ / Effect'
-      },
-      'XYZ Pendulum Effect Monster' => {
-        color: 0x252525,
-        suffix: '/ XYZ / Pendulum / Effect'
-      },
-      'Pendulum Effect Monster' => {
-        color: 0x84b870,
-        suffix: '/ Pendulum / Effect'
-      },
-      'Pendulum Flip Effect Monster' => {
-        color: 0x84b870,
-        suffix: '/ Pendulum / Flip / Effect'
-      },
-      'Pendulum Normal Monster' => {
-        color: 0x84b870,
-        suffix: '/ Pendulum'
-      },
-      'Pendulum Tuner Effect Monster' => {
-        color: 0x84b870,
-        suffix: '/ Pendulum / Tuner / Effect'
-      },
-      'Pendulum Effect Fusion Monster' => {
-        color: 0x84b870,
-        suffix: '/ Pendulum / Effect / Fusion'
-      },
-      'Link Monster' => {
-        color: 0x293cbd,
-        suffix: '/ Link / Effect'
-      }
-    }
-
-    NON_MONSTER_TYPES = {
-      'Spell Card' => {
-        color: 0x258b5c
-      },
-      'Trap Card' => {
-        color: 0xc51a57
-      },
-      'Skill Card' => {
-        color: 0x252525
-      }
-    }
-
-    command(:src) do |event, *from|
-      search_term = from.join(' ')
-      search_results = perform_search(search_term)
-
-      if search_results.empty?
-        send_no_results_embed(event, search_term)
-      else
-        # Store results in a hash that we can access later
-        user_id = event.user.id
-        @@search_cache ||= {}
-        @@search_cache[user_id] = {
-          search_term: search_term,
-          results: search_results,
-          current_page: 0,
-          total_pages: (search_results.length.to_f / ITEMS_PER_PAGE).ceil,
-          message_id: nil
-        }
-
-        message = display_page(event, search_term, user_id)
-        setup_reaction_handler(event, message)
+    def self.load(bot)
+      bot.register_application_command(
+        :list,
+        'Search Yu-Gi-Oh! cards by name',
+        server_id: ENV['guild_id_discord']
+      ) do |cmd|
+        cmd.string('name', 'Enter card name to search', required: true)
       end
-      nil # Return nil to prevent the command from responding with "command executed successfully"
+
+      bot.application_command(:list) do |event|
+        search_term = event.options['name']
+        begin
+          event.defer(ephemeral: false)
+          search_results = perform_search(search_term)
+
+          if search_results.empty?
+            event.edit_response(
+              embeds: [
+                {
+                  colour: EMBED_COLOR,
+                  fields: [
+                    {
+                      name: "0 card matches for ``#{search_term}``",
+                      value: 'Try again aibou..',
+                      inline: true
+                    }
+                  ]
+                }
+              ]
+            )
+          else
+            user_id = event.user.id
+            @@search_cache ||= {}
+            @@search_cache[user_id] = {
+              search_term: search_term,
+              results: search_results,
+              current_page: 0,
+              total_pages: (search_results.length.to_f / ITEMS_PER_PAGE).ceil,
+              message_id: nil
+            }
+
+            message = display_page(event, search_term, user_id)
+            setup_reaction_handler(event, message)
+          end
+        rescue => e
+          puts "[ERROR] Search command failed: #{e.message}"
+          event.edit_response(content: '⚠️ An error occurred while searching.')
+        end
+      end
     end
 
     private
@@ -168,18 +78,6 @@ module Bot::DiscordCommands
 
       results
     end
-
-    def self.send_no_results_embed(event, search_term)
-      event.channel.send_embed do |embed|
-        embed.colour = EMBED_COLOR
-        embed.add_field(
-          name: "0 card matches for ``#{search_term}``",
-          value: 'Try again aibou..',
-          inline: true
-        )
-      end
-    end
-
     def self.display_page(event, search_term, user_id)
       cache = @@search_cache[user_id]
       results = cache[:results]
@@ -198,26 +96,28 @@ module Bot::DiscordCommands
         card_list << "#{number_str}. #{card['name']}"
       end
 
+      # Kirim pesan baru dan simpan objek message-nya
       message =
-        event.channel.send_embed do |embed|
-          embed.colour = EMBED_COLOR
-          embed.add_field(
-            name:
-              "#{results.length} card matches for ``#{search_term}`` (Page #{current_page + 1}/#{total_pages})",
-            value: card_list.join("\n"),
-            inline: true
-          )
-          embed.footer =
-            Discordrb::Webhooks::EmbedFooter.new(
-              text:
-                'React with a number to see details for that card, or ⬅️ ➡️ to navigate pages'
+        event.respond do |response|
+          response.content = ''
+          response.add_embed do |embed|
+            embed.colour = EMBED_COLOR
+            embed.add_field(
+              name:
+                "#{results.length} card matches for ``#{search_term}`` (Page #{current_page + 1}/#{total_pages})",
+              value: card_list.join("\n"),
+              inline: true
             )
+            embed.footer =
+              Discordrb::Webhooks::EmbedFooter.new(
+                text:
+                  'React with a number to see details for that card, or ⬅️ ➡️ to navigate pages'
+              )
+          end
         end
 
-      # Add navigation reactions if needed
+      # Tambah reaction ke pesan yang sudah dikirim
       add_navigation_reactions(message, current_page, total_pages)
-
-      # Add number reactions for cards on this page
       add_reaction_numbers(message, cards_on_page.length)
 
       message
