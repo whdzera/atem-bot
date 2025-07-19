@@ -11,7 +11,7 @@ module Bot
     Discordrb::Bot.new(
       token: ENV['token_discord'],
       client_id: ENV['client_id_discord'],
-      intents: %i[server_messages server_presences]
+      intents: %i[servers server_messages server_presences server_members]
     )
   end
 
@@ -42,7 +42,7 @@ module Bot
         bot.game = 'Ready'
       end
 
-      puts "[#{Process.pid} #{Time.now}]  INFO --  : Running Atem Bot - Discord"
+      puts "[#{Process.pid} #{Time.now}] Running Atem Bot - Discord"
     end
 
     bot.mention { |event| event.respond '**`/help` for usage**' }

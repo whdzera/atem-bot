@@ -9,8 +9,7 @@ module Bot::DiscordCommands
     def self.load(bot)
       bot.register_application_command(
         :list,
-        'Search Yu-Gi-Oh! cards by name',
-        server_id: ENV['guild_id_discord']
+        'Search Yu-Gi-Oh! cards by name'
       ) do |cmd|
         cmd.string('name', 'Enter card name to search', required: true)
       end

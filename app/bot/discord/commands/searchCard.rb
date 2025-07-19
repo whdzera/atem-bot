@@ -3,33 +3,49 @@ module Bot::DiscordCommands
     def self.load(bot)
       bot.register_application_command(
         :search,
-        'Search Yu-Gi-Oh! card information',
-        server_id: ENV['guild_id_discord']
+        'Search Yu-Gi-Oh! cards'
       ) do |cmd|
-        cmd.string('name', 'Enter card name to search', required: true)
-      end
+        cmd.subcommand(:name, 'Search by card name') do |sub|
+          sub.string('input', 'Enter card name', required: true)
+        end
 
-      bot.application_command(:search) do |event|
-        card_name = event.options['name']
-        begin
-          event.defer(ephemeral: false)
-
-          card_match = Ygoprodeck::Match.is(card_name)
-          card_data = Ygoprodeck::Fname.is(card_match)
-
-          if card_data.nil? || card_data['id'].nil?
-            send_not_found_embed(event, card_name)
-          else
-            send_card_embed(event, card_data)
-          end
-        rescue => e
-          puts "[ERROR_API : #{Time.now}] #{e.message}"
-          event.edit_response(
-            content: "⚠️ An error occurred while searching for '#{card_name}'"
-          )
+        cmd.subcommand(:id, 'Search by card ID') do |sub|
+          sub.string('input', 'Enter card ID', required: true)
         end
       end
+
+      # Search by card name
+      bot
+        .application_command(:search)
+        .subcommand(:name) do |event|
+          card_name = event.options['input']
+          begin
+            event.defer(ephemeral: false)
+
+            card_match = Ygoprodeck::Match.is(card_name)
+            card_data = Ygoprodeck::Fname.is(card_match)
+
+            if card_data.nil? || card_data['id'].nil?
+              send_not_found_embed(event, card_name)
+            else
+              send_card_embed(event, card_data)
+            end
+          rescue => e
+            puts "[ERROR_API : #{Time.now}] #{e.message}"
+            event.edit_response(
+              content: "⚠️ An error occurred while searching for '#{card_name}'"
+            )
+          end
+        end
     end
+
+    # Search by card ID
+    bot
+      .application_command(:search)
+      .subcommand(:id) do |event|
+        query = event.options['input']
+        event.respond(content: "Searching by ID: #{query}")
+      end
 
     MONSTER_TYPES = {
       'Normal Monster' => {

@@ -1,11 +1,7 @@
 module Bot::DiscordCommands
   module Ping
     def self.load(bot)
-      bot.register_application_command(
-        :ping,
-        'Check latency bot',
-        server_id: ENV['guild_id_discord']
-      )
+      bot.register_application_command(:ping, 'Check latency bot')
 
       bot.application_command(:ping) do |event|
         begin

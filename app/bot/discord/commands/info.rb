@@ -1,11 +1,7 @@
 module Bot::DiscordCommands
   module Info
     def self.load(bot)
-      bot.register_application_command(
-        :info,
-        'Show information Atem Bot',
-        server_id: ENV['guild_id_discord']
-      )
+      bot.register_application_command(:info, 'Show information Atem Bot')
 
       bot.application_command(:info) do |event|
         begin

@@ -1,11 +1,7 @@
 module Bot::DiscordCommands
   module RandomCard
     def self.load(bot)
-      bot.register_application_command(
-        :random,
-        'Get a random Yu-Gi-Oh! card',
-        server_id: ENV['guild_id_discord']
-      )
+      bot.register_application_command(:random, 'Get a random Yu-Gi-Oh! card')
 
       bot.application_command(:random) do |event|
         begin
