@@ -37,15 +37,30 @@ module Bot::DiscordCommands
             )
           end
         end
-    end
 
-    # Search by card ID
-    bot
-      .application_command(:search)
-      .subcommand(:id) do |event|
-        query = event.options['input']
-        event.respond(content: "Searching by ID: #{query}")
-      end
+      # Search by card ID
+      bot
+        .application_command(:search)
+        .subcommand(:id) do |event|
+          card_name = event.options['input']
+          begin
+            event.defer(ephemeral: false)
+
+            card_data = Ygoprodeck::ID.is(card_name)
+
+            if card_data.nil? || card_data['id'].nil?
+              send_not_found_embed(event, card_name)
+            else
+              send_card_embed(event, card_data)
+            end
+          rescue => e
+            puts "[ERROR_API : #{Time.now}] #{e.message}"
+            event.edit_response(
+              content: "⚠️ An error occurred while searching for '#{card_name}'"
+            )
+          end
+        end
+    end
 
     MONSTER_TYPES = {
       'Normal Monster' => {
