@@ -9,7 +9,20 @@ module Bot::DiscordCommands
           event.defer(ephemeral: false)
           latency = ((Time.now - start) * 1000).round
 
-          event.edit_response(content: "Pong! Latency: #{latency}ms")
+          event.edit_response(
+            embeds: [
+              {
+                color: 0xff8040,
+                fields: [
+                  {
+                    name: '**Pong!**',
+                    value: "Latency: #{latency}ms",
+                    inline: true
+                  }
+                ]
+              }
+            ]
+          )
         rescue => e
           puts "[ERROR] Ping command failed: #{e.message}"
           event.respond(
