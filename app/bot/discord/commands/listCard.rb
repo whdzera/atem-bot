@@ -1,8 +1,8 @@
 module Bot::DiscordCommands
   module ListCard
     NUMBER_EMOJIS = %w[1️⃣ 2️⃣ 3️⃣ 4️⃣ 5️⃣ 6️⃣ 7️⃣ 8️⃣ 9️⃣ 🔟]
-    ITEMS_PER_PAGE = 10
-    MAX_RESULTS = 30
+    ITEMS_PER_PAGE = 5
+    MAX_RESULTS = 20
     EMBED_COLOR = 0xff8040
     NAVIGATION_EMOJIS = { prev_page: '⬅️', next_page: '➡️' }
 
@@ -13,7 +13,6 @@ module Bot::DiscordCommands
       ) do |cmd|
         cmd.string('name', 'Enter card name to search', required: true)
       end
-
       bot.application_command(:list) do |event|
         search_term = event.options['name']
         begin
@@ -24,7 +23,7 @@ module Bot::DiscordCommands
             event.edit_response(
               embeds: [
                 {
-                  colour: EMBED_COLOR,
+                  color: EMBED_COLOR,
                   fields: [
                     {
                       name: "0 card matches for ``#{search_term}``",
@@ -42,12 +41,10 @@ module Bot::DiscordCommands
               search_term: search_term,
               results: search_results,
               current_page: 0,
-              total_pages: (search_results.length.to_f / ITEMS_PER_PAGE).ceil,
-              message_id: nil
+              total_pages: (search_results.length.to_f / ITEMS_PER_PAGE).ceil
             }
 
-            message = display_page(event, search_term, user_id)
-            setup_reaction_handler(event, message)
+            display_page(event, search_term, user_id)
           end
         rescue => e
           puts "[ERROR] Search command failed: #{e.message}"
@@ -55,8 +52,6 @@ module Bot::DiscordCommands
         end
       end
     end
-
-    private
 
     def self.perform_search(search_term)
       results = []
@@ -77,6 +72,7 @@ module Bot::DiscordCommands
 
       results
     end
+
     def self.display_page(event, search_term, user_id)
       cache = @@search_cache[user_id]
       results = cache[:results]
@@ -85,95 +81,78 @@ module Bot::DiscordCommands
 
       start_index = current_page * ITEMS_PER_PAGE
       end_index = [start_index + ITEMS_PER_PAGE - 1, results.length - 1].min
-
       cards_on_page = results[start_index..end_index]
 
-      card_list = []
-      cards_on_page.each_with_index do |card, index|
-        number = index + 1
-        number_str = number == 10 ? '0' : number.to_s
-        card_list << "#{number_str}. #{card['name']}"
-      end
-
-      # Kirim pesan baru dan simpan objek message-nya
-      message =
-        event.respond do |response|
-          response.content = ''
-          response.add_embed do |embed|
-            embed.colour = EMBED_COLOR
-            embed.add_field(
-              name:
-                "#{results.length} card matches for ``#{search_term}`` (Page #{current_page + 1}/#{total_pages})",
-              value: card_list.join("\n"),
-              inline: true
-            )
-            embed.footer =
-              Discordrb::Webhooks::EmbedFooter.new(
-                text:
-                  'React with a number to see details for that card, or ⬅️ ➡️ to navigate pages'
-              )
+      card_list =
+        cards_on_page
+          .each_with_index
+          .map do |card, index|
+            number = index + 1
+            number_str = number == 10 ? '0' : number.to_s
+            "#{number_str}. #{card['name']}"
           end
-        end
+          .join("\n")
 
-      # Tambah reaction ke pesan yang sudah dikirim
+      # Edit embed yang sudah di-defer
+      event.edit_response(
+        embeds: [
+          {
+            color: EMBED_COLOR,
+            fields: [
+              {
+                name:
+                  "#{results.length} card matches for ``#{search_term}`` (Page #{current_page + 1}/#{total_pages})",
+                value: card_list,
+                inline: true
+              }
+            ],
+            footer: {
+              text:
+                'React with a number to see details for that card, or ⬅️ ➡️ to navigate pages'
+            }
+          }
+        ]
+      )
+
+      # Kirim message asli (yang akan kita kasih reaction)
+      message =
+        event.channel.send_message(
+          'React below to select a card or change page.'
+        )
+
+      # Simpan ID pesan untuk keperluan reaksi
+      @@search_cache[user_id][:message_id] = message.id
+
       add_navigation_reactions(message, current_page, total_pages)
       add_reaction_numbers(message, cards_on_page.length)
-
-      message
+      setup_reaction_handler(event, message)
     end
-
     def self.add_navigation_reactions(message, current_page, total_pages)
       begin
-        # Add previous page reaction if not on first page
-        message.react(NAVIGATION_EMOJIS[:prev_page]) if current_page > 0
-        sleep(0.5)
+        if current_page > 0
+          message.react(NAVIGATION_EMOJIS[:prev_page])
+          sleep(1.2)
+        end
 
-        # Add next page reaction if not on last page
         if current_page < total_pages - 1
           message.react(NAVIGATION_EMOJIS[:next_page])
+          sleep(1.2)
         end
-        sleep(0.5)
       rescue => e
-        puts "Error adding navigation reactions: #{e.message}"
+        puts "[WARN] Navigation emoji rate-limited: #{e.message}"
       end
     end
 
     def self.add_reaction_numbers(message, count)
       count = [count, ITEMS_PER_PAGE].min
-
-      begin
-        count.times do |i|
-          begin
-            case i
-            when 0
-              message.react("1\u20e3") # 1️⃣
-            when 1
-              message.react("2\u20e3") # 2️⃣
-            when 2
-              message.react("3\u20e3") # 3️⃣
-            when 3
-              message.react("4\u20e3") # 4️⃣
-            when 4
-              message.react("5\u20e3") # 5️⃣
-            when 5
-              message.react("6\u20e3") # 6️⃣
-            when 6
-              message.react("7\u20e3") # 7️⃣
-            when 7
-              message.react("8\u20e3") # 8️⃣
-            when 8
-              message.react("9\u20e3") # 9️⃣
-            when 9
-              message.react("0\u20e3") # 0️⃣
-            end
-
-            sleep(0.5)
-          rescue => e
-            puts "Failed to add reaction #{i + 1}: #{e.message}"
-          end
+      count.times do |i|
+        emoji = NUMBER_EMOJIS[i]
+        begin
+          message.react(emoji)
+          sleep(1.2) # ← Tambah delay supaya lebih aman
+        rescue => e
+          puts "[WARN] Reaction rate limit or failure: #{e.message}"
         end
-      rescue => e
-        puts "Error in reaction setup: #{e.message}"
       end
     end
 
@@ -190,30 +169,22 @@ module Bot::DiscordCommands
 
           user_id = reaction_event.user.id
           reaction = reaction_event.emoji.name
-
           cache = @@search_cache[user_id]
 
-          # Handle navigation reactions
           if reaction == NAVIGATION_EMOJIS[:prev_page] &&
                cache[:current_page] > 0
             cache[:current_page] -= 1
             message.delete
-            display_page(event, '', user_id)
+            display_page(event, cache[:search_term], user_id)
             next false
           elsif reaction == NAVIGATION_EMOJIS[:next_page] &&
                 cache[:current_page] < cache[:total_pages] - 1
             cache[:current_page] += 1
             message.delete
-            display_page(event, '', user_id)
+            display_page(event, cache[:search_term], user_id)
             next false
-          end
-
-          # Handle number reactions
-          if reaction.match(/^[0-9]\u20e3$/)
-            num = reaction[0].to_i
-            index = num == 0 ? 9 : num - 1
-
-            # Calculate the actual index in the full results array
+          elsif NUMBER_EMOJIS.include?(reaction)
+            index = NUMBER_EMOJIS.index(reaction)
             actual_index = cache[:current_page] * ITEMS_PER_PAGE + index
 
             if actual_index < cache[:results].length
@@ -228,14 +199,13 @@ module Bot::DiscordCommands
 
     def self.display_card_details(event, card)
       begin
-        card_id = card['id']
         card_data = Ygoprodeck::Fname.is(card['name'])
 
         if card_data && card_data['id']
           send_card_embed(event, card_data)
         else
           event.channel.send_message(
-            "Could not find detailed information for #{card['name']}"
+            "Could not find details for #{card['name']}"
           )
         end
       rescue => e
@@ -244,8 +214,6 @@ module Bot::DiscordCommands
     end
 
     def self.send_card_embed(event, card_data)
-      return if card_data.nil?
-
       id = card_data['id']
       name = card_data['name']
       type = card_data['type']
@@ -262,49 +230,39 @@ module Bot::DiscordCommands
     end
 
     def self.send_monster_embed(event, card_data)
-      id = card_data['id']
-      name = card_data['name']
-      type = card_data['type']
-      attribute = card_data['attribute']
-      level = card_data['level']
-      race = card_data['race']
-      desc = card_data['desc']
-      atk = card_data['atk']
-      def_val = card_data['def']
-      pict = Ygoprodeck::Image.is(id)
+      pict = Ygoprodeck::Image.is(card_data['id'])
 
       ban_ocg = card_data.dig('banlist_info', 'ban_ocg') || 'Unlimited'
       ban_tcg = card_data.dig('banlist_info', 'ban_tcg') || 'Unlimited'
 
-      type_info = MONSTER_TYPES[type]
-      about = "[ #{race} #{type_info[:suffix]} ]"
+      type_info = MONSTER_TYPES[card_data['type']]
+      about = "[ #{card_data['race']} #{type_info[:suffix]} ]"
 
       event.channel.send_embed do |embed|
         embed.colour = type_info[:color]
-        embed.add_field name: "**#{name}**",
+        embed.add_field name: "**#{card_data['name']}**",
                         value:
-                          "**Limit :** **OCG:** #{ban_ocg} | **TCG:** #{ban_tcg}\n**Type:** #{type}\n**Attribute:** #{attribute}\n**Level:** #{level}"
-        embed.add_field name: about, value: desc
-        embed.add_field name: 'ATK', value: atk.to_s, inline: true
-        embed.add_field name: 'DEF', value: def_val.to_s, inline: true
-        embed.image = Discordrb::Webhooks::EmbedImage.new(url: pict)
+                          "**Limit:** **OCG:** #{ban_ocg} | **TCG:** #{ban_tcg}\n" \
+                            "**Type:** #{card_data['type']}\n" \
+                            "**Attribute:** #{card_data['attribute']}\n" \
+                            "**Level:** #{card_data['level']}"
+        embed.add_field name: about, value: card_data['desc']
+        embed.add_field name: 'ATK', value: card_data['atk'].to_s, inline: true
+        embed.add_field name: 'DEF', value: card_data['def'].to_s, inline: true
+        embed.image = { url: pict }
       end
     end
 
     def self.send_non_monster_embed(event, card_data)
-      id = card_data['id']
-      name = card_data['name']
-      type = card_data['type']
-      race = card_data['race']
-      desc = card_data['desc']
-      pict = Ygoprodeck::Image.is(id)
+      pict = Ygoprodeck::Image.is(card_data['id'])
 
       event.channel.send_embed do |embed|
-        embed.colour = NON_MONSTER_TYPES[type][:color]
-        embed.add_field name: "**#{name}**",
-                        value: "**Type:** #{type}\n**Property:** #{race}"
-        embed.add_field name: 'Effect', value: desc
-        embed.image = Discordrb::Webhooks::EmbedImage.new(url: pict)
+        embed.colour = NON_MONSTER_TYPES[card_data['type']][:color]
+        embed.add_field name: "**#{card_data['name']}**",
+                        value:
+                          "**Type:** #{card_data['type']}\n**Property:** #{card_data['race']}"
+        embed.add_field name: 'Effect', value: card_data['desc']
+        embed.image = { url: pict }
       end
     end
   end
