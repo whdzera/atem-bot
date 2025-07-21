@@ -20,11 +20,11 @@ discord, Telegram, and Whatsapp bot for search yugioh card, written in ruby and 
 |   Commands    |    Discord    |    Telegram    |    Whatsapp    |
 | ------------- | ------------- | ------------- | ------------- |
 | information  | ```/info``` | ```/info``` | ```:atem``` |
-| ping or status | ```/ping``` | ```/ping``` | ```:status``` |
-| random card | ```/random``` | ```/random``` |  |
-| list search card  |  ```/list```    | ```/list``` | ```:ls```|
-| image card  |  ```/art```    | ```/card``` | ``` ```|
-| search card | ```/search``` | ```/search``` | ```:src``` |
+| ping | ```/ping``` | ```/ping``` | ```:ping``` |
+| random card | ```/random``` | ```/random``` | ```:random``` |
+| list card  |  ```/list```    | ```/list``` | ```:list```|
+| image card  |  ```/art```    | ```/card``` | ```/card```|
+| search card | ```/search``` | ```/search``` | ```:search``` |
 | quick search card | ```::card_name::``` | ```::card_name::``` | ```::card_name::``` |
 
 ### View

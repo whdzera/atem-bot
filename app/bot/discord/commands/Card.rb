@@ -1,22 +1,22 @@
 module Bot::DiscordCommands
-  module ArtCard
+  module Card
     def self.load(bot)
       bot.register_application_command(
-        :art,
-        'Search Art Yu-Gi-Oh! cards'
+        :card,
+        'Search Image Yu-Gi-Oh! cards'
       ) do |cmd|
-        cmd.subcommand(:name, 'Search Art by card name') do |sub|
+        cmd.subcommand(:name, 'Search Image by card name') do |sub|
           sub.string('input', 'Enter card name', required: true)
         end
 
-        cmd.subcommand(:id, 'Search Art by card ID') do |sub|
+        cmd.subcommand(:id, 'Search Image by card ID') do |sub|
           sub.string('input', 'Enter card ID', required: true)
         end
       end
 
       # Search by card name
       bot
-        .application_command(:art)
+        .application_command(:card)
         .subcommand(:name) do |event|
           card_name = event.options['input']
           begin
@@ -38,18 +38,8 @@ module Bot::DiscordCommands
                 ]
               )
             else
-              art_image = Ygoprodeck::Image_small.is(card_data['id'])
-              event.edit_response(
-                embeds: [
-                  {
-                    color: 0xff8040,
-                    title: "**#{card_data['name']}**",
-                    image: {
-                      url: art_image
-                    }
-                  }
-                ]
-              )
+              image = Ygoprodeck::Image.is(card_data['id'])
+              event.edit_response(embeds: [{ image: { url: image } }])
             end
           rescue => e
             puts "[ERROR_API : #{Time.now}] #{e.message}"
@@ -61,7 +51,7 @@ module Bot::DiscordCommands
 
       # Search by card ID
       bot
-        .application_command(:art)
+        .application_command(:card)
         .subcommand(:id) do |event|
           card_id = event.options['input']
           begin
@@ -82,18 +72,8 @@ module Bot::DiscordCommands
                 ]
               )
             else
-              art_image = Ygoprodeck::Image_small.is(card_data['id'])
-              event.edit_response(
-                embeds: [
-                  {
-                    color: 0xff8040,
-                    title: "**#{card_data['name']}**",
-                    image: {
-                      url: art_image
-                    }
-                  }
-                ]
-              )
+              image = Ygoprodeck::Image.is(card_data['id'])
+              event.edit_response(embeds: [{ image: { url: image } }])
             end
           rescue => e
             puts "[ERROR_API : #{Time.now}] #{e.message}"
