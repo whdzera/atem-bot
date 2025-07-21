@@ -4,16 +4,12 @@
 ![Lang](https://img.shields.io/badge/language-typescript-blue)
 
 # Atem Bot
-discord, Telegram, and Whatsapp bot for search yugioh card, written in ruby and typescript.
+A discord, Telegram, and Whatsapp bot for search yugioh card, written in ruby and typescript.
 
-### Play
+APIs from Ygoprodeck
 
-> Discord : https://top.gg/bot/617492380710469763
-
-> Telegram : https://t.me/Atem_YugiohBot
-
-> Whatsapp : -
-
+### Website
+https://atem.whdzera.my.id/
 
 ### Usage
 
@@ -23,7 +19,7 @@ discord, Telegram, and Whatsapp bot for search yugioh card, written in ruby and 
 | ping | ```/ping``` | ```/ping``` | ```:ping``` |
 | random card | ```/random``` | ```/random``` | ```:random``` |
 | list card  |  ```/list```    | ```/list``` | ```:list```|
-| image card  |  ```/art```    | ```/card``` | ```/card```|
+| image card  |  ```/card```    | ```/card``` | ```/card```|
 | search card | ```/search``` | ```/search``` | ```:search``` |
 | quick search card | ```::card_name::``` | ```::card_name::``` | ```::card_name::``` |
 
