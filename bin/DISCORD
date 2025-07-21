@@ -11,7 +11,8 @@ module Bot
     Discordrb::Bot.new(
       token: ENV['token_discord'],
       client_id: ENV['client_id_discord'],
-      intents: %i[servers server_messages server_presences server_members]
+      intents: %i[servers server_messages server_presences server_members],
+      compress_mode: :large
     )
   end
 
@@ -33,15 +34,7 @@ module Bot
     bot = create_bot
 
     bot.ready do |_event|
-      case CONFIG
-      when 'development'
-        bot.game = ENV['game_discord_development']
-      when 'production'
-        bot.game = ENV['game_discord_production']
-      else
-        bot.game = 'Ready'
-      end
-
+      bot.game = ENV["game_discord_#{CONFIG}"] || 'Ready'
       puts "[#{Process.pid} #{Time.now}] Running Atem Bot - Discord"
     end
 
