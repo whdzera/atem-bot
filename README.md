@@ -12,18 +12,19 @@ discord, Telegram, and Whatsapp bot for search yugioh card, written in ruby and 
 
 > Telegram : https://t.me/Atem_YugiohBot
 
-> Whatsapp : 
+> Whatsapp : -
 
 
 ### Usage
 
 |   Commands    |    Discord    |    Telegram    |    Whatsapp    |
 | ------------- | ------------- | ------------- | ------------- |
-| information  | ```::info``` | ```/info``` | ```:atem``` |
-| ping or status | ```::ping``` |  | ```:status``` |
-| random card | ```::random``` | ```/random``` |  |
-| list search card  |  ```::src card_name```    | ```/searchlist``` | ```:ls```|
-| search card |  | ```/search``` | ```:src``` |
+| information  | ```/info``` | ```/info``` | ```:atem``` |
+| ping or status | ```/ping``` | ```/ping``` | ```:status``` |
+| random card | ```/random``` | ```/random``` |  |
+| list search card  |  ```/list```    | ```/list``` | ```:ls```|
+| image card  |  ```/art```    | ```/card``` | ``` ```|
+| search card | ```/search``` | ```/search``` | ```:src``` |
 | quick search card | ```::card_name::``` | ```::card_name::``` | ```::card_name::``` |
 
 ### View

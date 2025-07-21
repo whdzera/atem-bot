@@ -8,6 +8,7 @@ class Atem
   COMMANDS = {
     start: %w[/start /welcome /help],
     info: ['/info'],
+    ping: ['/ping'],
     card: ['/card'],
     random: ['/random'],
     search: ['/search']
@@ -42,6 +43,17 @@ class Atem
       send_message(bot, chat_id, General.help)
     when COMMANDS[:info].include?(text)
       send_info_message(bot, chat_id)
+    when COMMANDS[:ping].include?(text)
+      start_time = Time.now
+      msg = bot.api.send_message(chat_id: chat_id, text: 'Pinging...')
+      end_time = Time.now
+      latency = ((end_time - start_time) * 1000).round
+
+      bot.api.edit_message_text(
+        chat_id: chat_id,
+        message_id: msg.message_id,
+        text: "Pong! Latency: #{latency}ms"
+      )
     when COMMANDS[:card].include?(text)
       send_message(bot, chat_id, '/card <name card>')
     when text.start_with?("#{COMMANDS[:card][0]} ")
