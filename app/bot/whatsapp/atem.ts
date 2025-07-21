@@ -4,10 +4,10 @@ import dotenv from 'dotenv';
 import path from 'path';
 
 import { handleInfo, handleHelp, handlePing } from './commands/General';
-import { fetchRandomCard } from './commands/Random';
-import { fetchCardImage } from './commands/Card';
-import { fetchCardData } from './commands/SearchCard';
 import { listCards } from './commands/ListCard';
+import { fetchRandomCard } from './commands/RandomCard';
+import { fetchCardData } from './commands/SearchCard';
+import { fetchCardImage } from './commands/Card';
 
 // initialize Atem bot
 dotenv.config({ path: path.resolve(__dirname, '../../../config/.env') });
