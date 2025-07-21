@@ -1,14 +1,19 @@
 class Card
   def self.message(from)
+    # Cari kartu berdasarkan nama/keyword
     matching = Ygoprodeck::Match.is(from)
     card = Ygoprodeck::Fname.is(matching)
+    id = card['id']
 
-    return "*#{from}* tidak ditemukan." if card.nil? || card['id'].nil?
+    # Jika kartu tidak ditemukan
+    if card.nil? || card['id'].nil?
+      return { error: "*#{from}* tidak ditemukan." }
+    end
 
-    type = card['type']
-    return format_monster_card(card) if MONSTER_TYPES.include?(type)
-    return format_non_monster_card(card) if NON_MONSTER_TYPES.include?(type)
+    # Dapatkan gambar kartu
+    image = Ygoprodeck::Image.is(id)
 
-    "*#{card['name']}* memiliki tipe yang tidak dikenali: #{type}"
+    # Return hash dengan gambar dan info dasar kartu
+    { image: image, success: true }
   end
 end

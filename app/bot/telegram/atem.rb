@@ -1,8 +1,6 @@
-require_relative 'commands/General'
-require_relative 'commands/RandomCard'
-require_relative 'commands/SearchCard'
-require_relative 'commands/ListCard'
-require_relative 'commands/PictCard'
+Dir[File.join(__dir__, 'commands/*.rb')].sort.each do |file|
+  require_relative file
+end
 
 class Atem
   COMMAND_PREFIX = '/'.freeze
@@ -10,6 +8,7 @@ class Atem
   COMMANDS = {
     start: %w[/start /welcome /help],
     info: ['/info'],
+    card: ['/card'],
     random: ['/random'],
     search: ['/search']
     #searchlist: ['/searchlist']
@@ -43,6 +42,10 @@ class Atem
       send_message(bot, chat_id, General.help)
     when COMMANDS[:info].include?(text)
       send_info_message(bot, chat_id)
+    when COMMANDS[:card].include?(text)
+      send_message(bot, chat_id, '/card <name card>')
+    when text.start_with?("#{COMMANDS[:card][0]} ")
+      handle_card(bot, chat_id, text.sub("#{COMMANDS[:card][0]} ", ''))
     when COMMANDS[:random].include?(text)
       hit_random = Random.random_card
 
@@ -54,16 +57,8 @@ class Atem
       )
     when COMMANDS[:search].include?(text)
       send_message(bot, chat_id, '/search <name card>')
-      #when COMMANDS[:searchlist].include?(text)
-      #send_message(bot, chat_id, '/searchlist <name card>')
     when text.start_with?("#{COMMANDS[:search][0]} ")
       handle_search(bot, chat_id, text.sub("#{COMMANDS[:search][0]} ", ''))
-      # when text.start_with?("#{COMMANDS[:searchlist][0]} ")
-      #   handle_searchlist(
-      #     bot,
-      #     chat_id,
-      #     text.sub("#{COMMANDS[:searchlist][0]} ", '')
-      #   )
     when text.include?('::')
       handle_shorthand_search(bot, chat_id, text)
     end
@@ -91,6 +86,21 @@ class Atem
       parse_mode: 'Markdown',
       reply_markup: markup
     )
+  end
+
+  def self.handle_card(bot, chat_id, keyword)
+    result = Card.message(keyword)
+
+    if result[:success]
+      bot.api.send_photo(
+        chat_id: chat_id,
+        photo: result[:image],
+        caption: result[:caption],
+        parse_mode: 'Markdown'
+      )
+    else
+      send_message(bot, chat_id, result[:error])
+    end
   end
 
   def self.handle_search(bot, chat_id, keyword)
