@@ -154,6 +154,7 @@ module Bot::DiscordCommands
     def self.display_monster_card(event, card_data)
       id = card_data['id']
       name = card_data['name']
+      link = card_data['ygoprodeck_url']
       type = card_data['type']
       attribute = card_data['attribute']
       level = card_data['level']
@@ -161,7 +162,7 @@ module Bot::DiscordCommands
       desc = card_data['desc']
       atk = card_data['atk']
       def_val = card_data['def']
-      pict = Ygoprodeck::Image.is(id)
+      pict = Ygoprodeck::Image_small.is(id)
 
       ban_ocg = card_data.dig('banlist_info', 'ban_ocg') || 'Unlimited'
       ban_tcg = card_data.dig('banlist_info', 'ban_tcg') || 'Unlimited'
@@ -173,15 +174,17 @@ module Bot::DiscordCommands
         builder.content = ''
         builder.add_embed do |embed|
           embed.colour = type_info[:color]
+          embed.title = name
+          embed.url = link
           embed.add_field(
-            name: "**#{name}**",
+            name: '',
             value:
               "**Limit :** **OCG:** #{ban_ocg} | **TCG:** #{ban_tcg}\n**Type:** #{type}\n**Attribute:** #{attribute}\n**Level:** #{level}"
           )
           embed.add_field(name: about, value: desc)
           embed.add_field(name: 'ATK', value: atk.to_s, inline: true)
           embed.add_field(name: 'DEF', value: def_val.to_s, inline: true)
-          embed.image = Discordrb::Webhooks::EmbedImage.new(url: pict)
+          embed.thumbnail = Discordrb::Webhooks::EmbedThumbnail.new(url: pict)
         end
       end
     end
@@ -189,21 +192,24 @@ module Bot::DiscordCommands
     def self.display_non_monster_card(event, card_data)
       id = card_data['id']
       name = card_data['name']
+      link = card_data['ygoprodeck_url']
       type = card_data['type']
       race = card_data['race']
       desc = card_data['desc']
-      pict = Ygoprodeck::Image.is(id)
+      pict = Ygoprodeck::Image_small.is(id)
 
       event.edit_response do |builder|
         builder.content = ''
         builder.add_embed do |embed|
           embed.colour = NON_MONSTER_TYPES[type][:color]
+          embed.title = name
+          embed.url = link
           embed.add_field(
-            name: "**#{name}**",
+            name: '',
             value: "**Type:** #{type}\n**Property:** #{race}"
           )
           embed.add_field(name: 'Effect', value: desc)
-          embed.image = Discordrb::Webhooks::EmbedImage.new(url: pict)
+          embed.thumbnail = Discordrb::Webhooks::EmbedThumbnail.new(url: pict)
         end
       end
     end

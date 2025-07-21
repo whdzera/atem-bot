@@ -12,11 +12,13 @@ module Bot::DiscordCommands
               {
                 color: 0xff8040,
                 title: '**Atem bot Information**',
-                fields: [{ name: 'details', value: <<~INFO.strip }]
+                fields: [{ name: '', value: <<~INFO.strip }]
                       **Name**      : Atem  
                       **Version**   : 1.1.0  
-                      **Developer** : [@whdzera](https://github.com/whdzera)  
+                      **Developer** : <@451343484323102721>  
                       **Written**   : Ruby Language (discordrb)  
+                      **Repository**: https://github.com/whdzera/atem-bot
+                      **Website**   : https://atem.whdzera.my.id
                     INFO
               }
             ]

@@ -1,8 +1,8 @@
 module Bot::DiscordCommands
   module ListCard
     NUMBER_EMOJIS = %w[1️⃣ 2️⃣ 3️⃣ 4️⃣ 5️⃣ 6️⃣ 7️⃣ 8️⃣ 9️⃣ 🔟]
-    ITEMS_PER_PAGE = 10
-    MAX_RESULTS = 30
+    ITEMS_PER_PAGE = 5
+    MAX_RESULTS = 20
     EMBED_COLOR = 0xff8040
     NAVIGATION_EMOJIS = { prev_page: '⬅️', next_page: '➡️' }
 

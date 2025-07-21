@@ -1,3 +1,4 @@
+=begin
 module Bot::DiscordCommands
   module QuickSearchcard
     extend Discordrb::EventContainer
@@ -120,48 +121,47 @@ module Bot::DiscordCommands
     NOT_FOUND_IMAGE = 'https://i.imgur.com/lPSo3Tt.jpg'
 
     # Update message handler
-    message do |event|
-      # Only process messages starting with ::
-      unless event.content.start_with?('::') && event.content.end_with?('::')
-        next
-      end
+    message(start_with: '::') do |event|
+      content = event.message.content
 
-      # Extract card name between ::
-      card_name = event.content[2..-3].strip
-      next if card_name.empty?
+      # Check if message matches the pattern ::cardname::
+      if content.match?(/^::(.+?)::$/)
+        # Extract card name between ::
+        card_name = content[2..-3].strip
+        return if card_name.empty?
 
-      # Add typing indicator
-      event.channel.start_typing
+        # Add typing indicator
+        event.channel.start_typing
 
-      begin
-        # Search for card
-        card_match = Ygoprodeck::Match.is(card_name)
-        card_data = Ygoprodeck::Fname.is(card_match)
+        begin
+          # Search for card
+          card = Ygoprodeck::Match.is(card_name)
+          card_data = Ygoprodeck::Fname.is(card)
 
-        if card_data.nil? || card_data['id'].nil?
-          event.respond(
-            embed: {
-              colour: 0xff1432,
-              description: "**'#{card_name}' not found**",
-              image: {
-                url: NOT_FOUND_IMAGE
+          if card_data.nil? || card_data['id'].nil?
+            event.respond(
+              embed: {
+                colour: 0xff1432,
+                description: "**'#{card_name}' not found**",
+                image: {
+                  url: NOT_FOUND_IMAGE
+                }
               }
-            }
-          )
-        else
-          # Send card data
-          type = card_data['type']
-          if is_monster_card?(type)
-            send_monster_embed(event, card_data)
+            )
           else
-            send_non_monster_embed(event, card_data)
+            type = card_data['type']
+            if is_monster_card?(type)
+              send_monster_embed(event, card_data)
+            else
+              send_non_monster_embed(event, card_data)
+            end
           end
+        rescue => e
+          puts "[ERROR_API : #{Time.now}] #{e.message}"
+          event.respond("⚠️ Error searching for '#{card_name}'")
+        ensure
+          event.channel.stop_typing
         end
-      rescue => e
-        puts "[ERROR_API : #{Time.now}] #{e.message}"
-        event.respond("⚠️ Error searching for '#{card_name}'")
-      ensure
-        event.channel.stop_typing
       end
     end
 
@@ -245,3 +245,4 @@ module Bot::DiscordCommands
     end
   end
 end
+=end

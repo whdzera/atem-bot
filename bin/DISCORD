@@ -38,7 +38,9 @@ module Bot
       puts "[#{Process.pid} #{Time.now}] Running Atem Bot - Discord"
     end
 
-    bot.mention { |event| event.respond '**`/help` for usage**' }
+    bot.mention do |event|
+      event.respond '**`/search` for searching yugioh card**'
+    end
 
     load_modules(bot, :DiscordEvents, 'events')
     load_modules(bot, :DiscordCommands, 'commands')

@@ -1,8 +1,8 @@
-require_relative 'commands/general'
-require_relative 'commands/randomCard'
-require_relative 'commands/searchCard'
-require_relative 'commands/listCard'
-require_relative 'commands/pictCard'
+require_relative 'commands/General'
+require_relative 'commands/RandomCard'
+require_relative 'commands/SearchCard'
+require_relative 'commands/ListCard'
+require_relative 'commands/PictCard'
 
 class Atem
   COMMAND_PREFIX = '/'.freeze
