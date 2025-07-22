@@ -1,6 +1,6 @@
 class General
   def self.help
-    "*Atem Bot*\n-------------------\n/info - information bot\n/random - random yugioh card\n/searchlist - list search yugioh card\n/card <name card> - search image yugioh card\n/search <name card> - search yugioh card\n`::name card::` - Dynamic search card"
+    "*Atem Bot*\n-------------------\n/info - information bot\n/random - random yugioh card\n/list - list search yugioh card\n/card <name card> - search image yugioh card\n/search <name card> - search yugioh card\n`::name card::` - Dynamic search card"
   end
 
   def self.info
