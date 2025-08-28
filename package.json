@@ -1,49 +1,29 @@
 {
-  "name": "@rokhimin/atem",
-  "version": "1.0.0",
-  "description": "A bot Whatsapps for search yu-gi-oh cards with baileys library or bot-whatsapp",
-  "main": "lib/baileys.js",
-  "types": "lib/baileys.d.ts",
+  "name": "atem-bot",
+  "version": "2.1.0",
+  "description": "WhatsApp Bot for Yu-Gi-Oh! cards",
+  "main": "app/bot/whatsapp/atem.js",
+  "type": "module",
   "scripts": {
-    "build": "tsc",
-    "app": "tsc && node -r ts-node/register app/bot/whatsapp/bot.ts"
+    "start": "node app/bot/whatsapp/atem.js"
+  },
+  "dependencies": {
+    "@hapi/boom": "^10.0.1",
+    "@whiskeysockets/baileys": "^6.7.0",
+    "chalk": "^4.1.2",
+    "dotenv": "^16.0.3",
+    "node-fetch": "^3.3.0",
+    "pino": "^7.0.5",
+    "qrcode-terminal": "^0.12.0",
+    "fuse.js": "^7.1.0"
+  },
+  "directories": {
+    "lib": "lib",
+    "src": "src"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rokhimin/wa-bot-atem.git"
+    "url": "git+https://github.com/whdzera/atem-bot.git"
   },
-  "keywords": [
-    "bot",
-    "baileys",
-    "whatsapp",
-    "yugioh"
-  ],
-  "files": [
-    "./lib/**/*"
-  ],
-  "dependencies": {
-    "@ffmpeg-installer/ffmpeg": "^1.1.0",
-    "@whiskeysockets/baileys": "^6.7.9",
-    "dotenv": "^16.5.0",
-    "fluent-ffmpeg": "^2.1.3",
-    "fuse.js": "^7.1.0",
-    "node-fetch": "^2.7.0",
-    "qr-image": "^3.2.0",
-    "qrcode-terminal": "^0.12.0"
-  },
-  "author": "Rokhimin Wahid",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/rokhimin/wa-bot-atem/issues"
-  },
-  "homepage": "https://github.com/rokhimin/wa-bot-atem#readme",
-  "devDependencies": {
-    "@prettier/plugin-ruby": "^3.2.2",
-    "@types/fluent-ffmpeg": "^2.1.26",
-    "@types/mime-types": "^2.1.4",
-    "@types/node": "^22.7.8",
-    "prettier": "^3.5.3",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.6.3"
-  }
+  "homepage": "https://github.com/whdzera/atem-bot#readme"
 }

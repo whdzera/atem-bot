@@ -2,6 +2,7 @@
 /glitch.json
 node_modules
 *_sessions
+sessions
 baileys.log
 core.class.log
 db.json

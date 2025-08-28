@@ -1,16 +1,18 @@
 import fetch from 'node-fetch';
 
-export async function listCards(searchTerm: string): Promise<string> {
+export async function listCards(searchTerm) {
   try {
     const encodedTerm = encodeURIComponent(searchTerm);
-    const response = await fetch(`https://db.ygoprodeck.com/api/v7/cardinfo.php?fname=${encodedTerm}`);
-    const data: any = await response.json();
+    const response = await fetch(
+      `https://db.ygoprodeck.com/api/v7/cardinfo.php?fname=${encodedTerm}`
+    );
+    const data = await response.json();
 
     if (data.error) {
       return `No cards found matching "${searchTerm}"`;
     }
 
-    data.data.sort((a: any, b: any) => a.name.localeCompare(b.name));
+    data.data.sort((a, b) => a.name.localeCompare(b.name));
 
     const cards = data.data.slice(0, 20);
     const cardCount = data.data.length;
@@ -22,7 +24,7 @@ export async function listCards(searchTerm: string): Promise<string> {
 
     message += `:\n`;
 
-    cards.forEach((card: any, index: number) => {
+    cards.forEach((card, index) => {
       message += `* ${card.name}\n`;
     });
 

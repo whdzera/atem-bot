@@ -1,10 +1,10 @@
 <img align="center" width="150" src="https://i.imgur.com/Fgolqn1.png" />
 
 ![Lang](https://img.shields.io/badge/language-ruby-red)
-![Lang](https://img.shields.io/badge/language-typescript-blue)
+![Lang](https://img.shields.io/badge/language-javascript-yellow)
 
 # Atem Bot
-A discord, Telegram, and Whatsapp bot for search yugioh card, written in ruby and typescript.
+A discord, Telegram, and Whatsapp bot for search yugioh card, written in ruby and javascript.
 
 APIs from Ygoprodeck
 
@@ -30,8 +30,8 @@ https://atem.whdzera.my.id/
 <img align="center" width="350" src="https://i.imgur.com/SS9VM9L.gif" />
 
 ### Prerequisite
-- Ruby 2.7.0 up
-- Node 18.20.8 up
+- Ruby 2.7.0^
+- Node 18.20.8^
 
 install all dependency
 

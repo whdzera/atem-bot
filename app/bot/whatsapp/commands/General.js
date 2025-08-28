@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 
-export async function handleInfo(send: (to: string, message: string) => Promise<void>, to: string) {
+export async function handleInfo(send, to) {
   const message = `*Atem* (version 1.1.0)
 Whatsapp Bot for search yugioh card
 
@@ -14,7 +14,7 @@ https://saweria.co/whdzera`;
   await send(to, message);
 }
 
-export async function handleHelp(send: (to: string, message: string) => Promise<void>, to: string) {
+export async function handleHelp(send, to) {
   const message = `*Usage*
 - \`:info\` Information about bot 
 - \`:ping\` information Latency Server
@@ -26,12 +26,14 @@ export async function handleHelp(send: (to: string, message: string) => Promise<
   await send(to, message);
 }
 
-export async function handlePing(send: (to: string, message: string) => Promise<void>, to: string) {
+export async function handlePing(send, to) {
   const start = Date.now();
-  let apiLatency: string;
+  let apiLatency;
 
   try {
-    const res = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?name=dark%20magician');
+    const res = await fetch(
+      'https://db.ygoprodeck.com/api/v7/cardinfo.php?name=dark%20magician'
+    );
     const json = await res.json();
     const end = Date.now();
     apiLatency = json?.data?.[0]?.id ? `${end - start}ms.` : 'ERROR';
