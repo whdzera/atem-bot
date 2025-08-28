@@ -249,6 +249,7 @@ module Bot::DiscordCommands
     def self.send_non_monster_embed(event, card_data)
       id = card_data['id']
       name = card_data['name']
+
       link = card_data['ygoprodeck_url']
       type = card_data['type']
       race = card_data['race']
